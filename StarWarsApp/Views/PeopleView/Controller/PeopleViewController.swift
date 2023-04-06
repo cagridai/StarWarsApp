@@ -7,14 +7,8 @@
 
 import UIKit
 
-//protocol PeopleViewControllerDelegate: AnyObject {
-//    func didTapMenuButton()
-//}
-
 final class PeopleViewController: UIViewController {
-    @IBOutlet weak var peopleTableView: UITableView!
-    
-//    weak var delegate: PeopleViewControllerDelegate?
+    @IBOutlet private weak var peopleTableView: UITableView!
     
     private var people: [PeopleResponse] = []
     
@@ -23,18 +17,22 @@ final class PeopleViewController: UIViewController {
         
         title = "Characters"
         
-//        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "list.star"), style: .done, target: self, action: #selector(didTapMenuButton))
-        
         peopleTableView.registerCell(cell: PeopleTableViewCell.self)
         peopleTableView.delegate = self
         peopleTableView.dataSource = self
         
+        Network.shared.request(endpointType: .people, decodingTo: [PeopleResponse].self) {[weak self] result in
+            switch result {
+            case .success(let response):
+                self?.people.append(contentsOf: response)
+                DispatchQueue.main.async {
+                    self?.peopleTableView.reloadData()
+                }
+            case .failure(let error):
+                print(CustomError(message: "People response error: \(error)"))
+            }
+        }
     }
-
-//    @objc private func didTapMenuButton() {
-//        delegate?.didTapMenuButton()
-//    }
-
 
 }
 
@@ -51,47 +49,37 @@ extension PeopleViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 50
     }
-}
-
-extension PeopleViewController: UIScrollViewDelegate {
-    private func createSpinnerFooter() -> UIView {
-        let footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 100))
-        
-        let spinner = UIActivityIndicatorView()
-        spinner.center = footerView.center
-        footerView.addSubview(spinner)
-        spinner.startAnimating()
-        
-        return footerView
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let url = people[indexPath.row].url else { return }
+        self.navigationController?.pushViewController(PeopleDetailViewController(url: url), animated: true)
     }
     
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let position = scrollView.contentOffset.y
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        let lastIndexPath = people.count - 1
+        guard lastIndexPath == indexPath.row else { return }
+        guard !Network.shared.isPaginating else { return }
         
-        if position > (peopleTableView.contentSize.height - 100 - scrollView.frame.size.height) {
-            guard !Network.shared.isPaginating else { return }
-            
+        DispatchQueue.main.async { [weak self] in
+            self?.peopleTableView.tableFooterView = Network.shared.createSpinnerFooter(view: (self?.view)!)
+        }
+        
+        Network.shared.request(endpointType: .people, decodingTo: [PeopleResponse].self) { [weak self] result in
             DispatchQueue.main.async {
-                self.peopleTableView.tableFooterView = self.createSpinnerFooter()
+                self?.peopleTableView.tableFooterView = nil
             }
             
-            Network.shared.request(endpointType: .people, decodingTo: [PeopleResponse].self) { [weak self] result in
+            switch result {
+            case .success(let response):
+                self?.people.append(contentsOf: response)
                 DispatchQueue.main.async {
-                    self?.peopleTableView.tableFooterView = nil
+                    self?.peopleTableView.reloadData()
                 }
                 
-                switch result {
-                case .success(let response):
-                    self?.people.append(contentsOf: response)
-                    DispatchQueue.main.async {
-                        self?.peopleTableView.reloadData()
-                    }
-                    
-                case .failure(let error):
-                    print(CustomError(message: "People response error: \(error)"))
-                }
+            case .failure(let error):
+                print(CustomError(message: "People response error: \(error)"))
             }
         }
+
     }
 }
-    

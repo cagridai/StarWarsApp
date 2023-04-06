@@ -21,7 +21,7 @@ struct PlanetResponse: Decodable {
     let films: [String]?
     let url: String?
     
-    enum PlanetResponseCodinKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey {
         case name
         case rotationPeriod = "rotation_period"
         case orbitalPeriod = "orbital_period"

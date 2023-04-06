@@ -1,15 +1,15 @@
 //
-//  PeopleTableViewCell.swift
+//  VehiclesTableViewCell.swift
 //  StarWarsApp
 //
-//  Created by Çağrı Dai on 31.03.2023.
+//  Created by Çağrı Dai on 4.04.2023.
 //
 
 import UIKit
 
-final class PeopleTableViewCell: UITableViewCell {
+final class VehiclesTableViewCell: UITableViewCell {
 
-    @IBOutlet private var peopleName: UILabel!
+    @IBOutlet private weak var vehiclesName: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -22,8 +22,7 @@ final class PeopleTableViewCell: UITableViewCell {
         // Configure the view for the selected state
     }
     
-    func configurePeopleCell(with response: PeopleResponse) {
-        peopleName.text = response.name ?? ""
+    func configure(with response: VehiclesResponse) {
+        vehiclesName.text = response.name ?? ""
     }
-    
 }

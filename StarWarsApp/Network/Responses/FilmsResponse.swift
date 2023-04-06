@@ -21,7 +21,7 @@ struct FilmsResponse: Decodable {
     let species: [String]?
     let url: String?
     
-    enum FilmResponseCodinKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey {
         case title
         case episodeID = "episode_id"
         case openingCrawl = "opening_crawl"
@@ -35,5 +35,4 @@ struct FilmsResponse: Decodable {
         case species
         case url
     }
-    
 }

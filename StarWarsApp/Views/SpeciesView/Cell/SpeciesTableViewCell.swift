@@ -1,15 +1,14 @@
 //
-//  PeopleTableViewCell.swift
+//  SpeciesTableViewCell.swift
 //  StarWarsApp
 //
-//  Created by Çağrı Dai on 31.03.2023.
+//  Created by Çağrı Dai on 3.04.2023.
 //
 
 import UIKit
 
-final class PeopleTableViewCell: UITableViewCell {
-
-    @IBOutlet private var peopleName: UILabel!
+final class SpeciesTableViewCell: UITableViewCell {
+    @IBOutlet private weak var speciesName: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -22,8 +21,8 @@ final class PeopleTableViewCell: UITableViewCell {
         // Configure the view for the selected state
     }
     
-    func configurePeopleCell(with response: PeopleResponse) {
-        peopleName.text = response.name ?? ""
+    func configure(with response: SpeciesResponse) {
+        speciesName.text = response.name ?? ""
     }
     
 }

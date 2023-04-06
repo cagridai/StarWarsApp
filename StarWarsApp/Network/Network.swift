@@ -7,7 +7,7 @@
 
 import UIKit
 
-class Network {
+final class Network {
     static let shared = Network()
     
     private var page: Int = 1
@@ -21,11 +21,9 @@ class Network {
     func request<T: Decodable>(endpointType: EndpointType, decodingTo: T.Type, completion: @escaping (_ result: (Result<T, CustomError>)) -> Void) {
         isPaginating = true
         
-        if var lastCalledEndpointType {
-            if endpointType != lastCalledEndpointType {
-                page = 1
-                lastCalledEndpointType = endpointType
-            }
+        if endpointType != lastCalledEndpointType {
+            page = 1
+            lastCalledEndpointType = endpointType
         } else {
             lastCalledEndpointType = endpointType
         }
@@ -68,8 +66,8 @@ class Network {
                 
                 completion(.success(result))
                 self?.isPaginating = false
-            } catch {
-                completion(.failure(CustomError(message: "Data and model is not compatible!")))
+            } catch let error {
+                completion(.failure(CustomError(message: error.localizedDescription)))
                 self?.isPaginating = false
             }
         }.resume()
@@ -84,6 +82,32 @@ class Network {
         spinner.startAnimating()
         
         return footerView
+    }
+    
+    func detailRequest<T: Decodable>(endpointType: EndpointType, decodingTo: T.Type, completion: @escaping (_ result: (Result<T, CustomError>)) -> Void) {
+        let urlString = endpointType.endpointValue
+        
+        guard let url = URL(string: urlString) else {
+            completion(.failure(CustomError(message: "URL is not valid!")))
+            return
+        }
+        
+        let urlRequest = URLRequest(url: url)
+        
+        URLSession.shared.dataTask(with: urlRequest) { data, response, error in
+            let decoder = JSONDecoder()
+            
+            do {
+                guard let data else {
+                    completion(.failure(CustomError(message: "There is no data!")))
+                    return
+                }
+                let response = try decoder.decode(T.self, from: data)
+                completion(.success(response))
+            } catch let error {
+                completion(.failure(CustomError(message: error.localizedDescription)))
+            }
+        }.resume()
     }
 }
 

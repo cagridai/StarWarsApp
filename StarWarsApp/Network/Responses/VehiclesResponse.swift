@@ -23,7 +23,7 @@ struct VehiclesResponse: Decodable {
     let films: [String]?
     let url: String?
     
-    enum VehiclesResponseCodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey {
         case name
         case model
         case manufacturer

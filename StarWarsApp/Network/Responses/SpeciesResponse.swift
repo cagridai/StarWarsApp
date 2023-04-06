@@ -20,9 +20,9 @@ struct SpeciesResponse: Decodable {
     let language: String?
     let people: [String]?
     let films: [String]?
-    let url: String
+    let url: String?
     
-    enum SpeciesResponseCodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey {
         case name
         case classification
         case designation

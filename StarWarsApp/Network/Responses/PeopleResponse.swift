@@ -23,7 +23,7 @@ struct PeopleResponse: Decodable {
     let starships: [String]?
     let url: String?
     
-    enum PeopleResponseCodingKeys: String, CodingKey {
+    enum CodingKeys:String, CodingKey {
         case name
         case height
         case mass
@@ -38,6 +38,5 @@ struct PeopleResponse: Decodable {
         case vehicles
         case starships
         case url
-        
     }
 }

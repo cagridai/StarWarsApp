@@ -52,37 +52,36 @@ extension PlanetsViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 50
     }
-}
-
-extension PlanetsViewController: UIScrollViewDelegate {
     
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let position = scrollView.contentOffset.y
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let url = planets[indexPath.row].url else { return }
+        self.navigationController?.pushViewController(PlanetsDetailViewController(url: url), animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        let lastIndexPath = planets.count - 1
+        guard lastIndexPath == indexPath.row else { return }
+        guard !Network.shared.isPaginating else {
+            return
+        }
         
-        if position > (planetsTableView.contentSize.height - 100 - scrollView.frame.size.height) {
-            // Fecth more data
-            guard !Network.shared.isPaginating else {
-                return
+        DispatchQueue.main.async { [weak self] in
+            self?.planetsTableView.tableFooterView = Network.shared.createSpinnerFooter(view: (self?.view)!)
+        }
+         
+        Network.shared.request(endpointType: .planets, decodingTo: [PlanetResponse].self) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.planetsTableView.tableFooterView = nil
             }
             
-            DispatchQueue.main.async { [weak self] in
-                self?.planetsTableView.tableFooterView = Network.shared.createSpinnerFooter(view: (self?.view)!)
-            }
-             
-            Network.shared.request(endpointType: .planets, decodingTo: [PlanetResponse].self) { [weak self] result in
+            switch result {
+            case .success(let response):
+                self?.planets.append(contentsOf: response)
                 DispatchQueue.main.async {
-                    self?.planetsTableView.tableFooterView = nil
+                    self?.planetsTableView.reloadData()
                 }
-                
-                switch result {
-                case .success(let response):
-                    self?.planets.append(contentsOf: response)
-                    DispatchQueue.main.async {
-                        self?.planetsTableView.reloadData()
-                    }
-                case .failure(let error):
-                    print(CustomError(message: "Planets response error: \(error) "))
-                }
+            case .failure(let error):
+                print(CustomError(message: "Planets response error: \(error) "))
             }
         }
     }
